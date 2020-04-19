@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Saria ES</title>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+		<style>
+			body {
+				margin:0;
+				padding:0;
+				overflow: hidden;
+			}
+			canvas {
+				margin:auto;
+			}
+			h3{
+				font: 1.5em Verdana, sans-serif;
+				padding: 10px;
+				margin-left: 40px;	
+			}
+			li.closedport{
+				color: red;
+			}
+			li.openport{
+				color: green;
+			}
+			ul {
+				list-style-type: none;
+				margin: 10;				
+			}
+			 			 
+			li {
+			  font: 1em Verdana, sans-serif;
+			  border-bottom: 1px solid #ccc;
+			  padding: 10px;
+			  width: 50%;
+			}
+			li:hover{
+				background-color: #fffbc3;
+			}
+			li:last-child {
+			  border: 0;
+			}		
+		</style>
+	</head>
+	<body>		
+	
+		<h3>SARIA Spain | Scales Status</h3>
+		<div id="scalesstatus">	</div>
+		<div id="weightdiv"></div>
+		
+		<script>
+			GetScalesStatus();
+				
+			function GetScalesStatus() {    
+
+				const data = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+				"<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" + 
+				  "<soap:Body>" +
+					"<GetAllPortStatus xmlns=\"http://tempuri.org/WSBascula\" />"+
+				  "</soap:Body>" +
+				"</soap:Envelope>";	
+
+			
+				var xmlhttp;
+				xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+					const res = xmlhttp.response;				
+					//console.log(res);
+					
+					const parser = new DOMParser()
+					const xmlDoc = parser.parseFromString(xmlhttp.responseText, "text/html");
+					document.getElementById("scalesstatus").innerHTML = xmlDoc.getElementsByTagName("GetAllPortStatusResult")[0].childNodes[0].nodeValue;
+					
+					const a_elements = document.getElementsByTagName("li");
+					console.log(a_elements);
+					for (let i = 0, len = a_elements.length; i < len; i++ ) {
+						a_elements[i].innerHTML = a_elements[i].innerHTML + "<button id=\"getweigtbut" + i + "\" onclick=\"GetWeight()\">getWeight</button>";
+					}
+					
+					}
+				}
+				const url="http://10.0.100.114:91/Service1.asmx";
+				xmlhttp.open("POST", url, true);
+				xmlhttp.setRequestHeader("Accept", 'text/xml; charset=utf-8');
+				xmlhttp.setRequestHeader("Content-type", "text/xml; charset=utf-8");
+				xmlhttp.setRequestHeader("SOAPAction", "http://tempuri.org/WSBascula/GetAllPortStatus");
+
+				xmlhttp.send(data);			
+			}
+			
+			function GetWeight() {    
+
+				const data = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+				"<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" + 
+				  "<soap:Body>" +
+					'<getWeight xmlns="http://tempuri.org/WSBascula">' +
+					  '<pPortName>COM23</pPortName>' +
+						'<pScaleType>TEST</pScaleType>' +
+					 '</getWeight>'+					
+				  "</soap:Body>" +
+				"</soap:Envelope>";	
+
+			
+				var xmlhttp;
+				xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+					const res = xmlhttp.response;				
+					console.log(res);
+					
+					const parser = new DOMParser()
+					const xmlDoc = parser.parseFromString(xmlhttp.responseText, "text/html");
+					console.log(document.getElementById("weightdiv"));
+					document.getElementById("weightdiv").innerHTML = xmlDoc.getElementsByTagName("getWeightResult")[0].innerText;
+					}
+				}
+				const url="http://10.0.100.114:91/Service1.asmx";
+				xmlhttp.open("POST", url, true);
+				xmlhttp.setRequestHeader("Accept", 'text/xml; charset=utf-8');
+				xmlhttp.setRequestHeader("Content-type", "text/xml; charset=utf-8");
+				xmlhttp.setRequestHeader("SOAPAction", "http://tempuri.org/WSBascula/getWeight");
+
+				xmlhttp.send(data);			
+			}
+		</script>
+	</body>
+</html>
